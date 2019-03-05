@@ -1,3 +1,5 @@
+// npm i node-fetch
+//npm i p-settle
 const cheerio = require('cheerio');
 const fetch = require('node-fetch');
 const pLimit = require('p-limit');
