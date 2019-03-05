@@ -4,8 +4,15 @@
   "description": "The must-watch Denzel's movies",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
+    "express": "^4.16.4",
+    "graphql": "^14.1.1",
+    "mongoose": "^5.4.17",
     "node-fetch": "^2.3.0",
     "p-limit": "^2.2.0",
-    "p-settle": "^2.1.0"
+    "p-settle": "^2.1.0",
+    "start": "nodemon server.js"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.10"
   }
 }
