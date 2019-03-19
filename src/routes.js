@@ -1,11 +1,11 @@
 'use strict';
 module.exports = function(app) {
-  var todoList = require('../src/controller');
+  var movieList = require('../src/controller');
 
   // movieList Routes
   app.route('/movies')
   // fetch a random must-watch movie
-    .get(movieList.list_all_movies)
+    .get(movieList.must_watch_movies)
     .post(movieList.create_a_movie);
 
 
@@ -14,7 +14,7 @@ module.exports = function(app) {
   //fetch a specific movie
     .get(movieList.read_a_movie)
     .put(movieList.update_a_movie)
-    .delete(movieList.delete_a_movie);
+    .delete(movieList.delete_a_movie)
     //POST /movies/:id
     //save a watched date and a review
     //date - the watched date
@@ -23,9 +23,16 @@ module.exports = function(app) {
 
 
     app.route('/movies/populate')
+    .get(movieList.populate_the_db);
+
     //GET /movies/populate
     //populate the database with all the Denzel's movies from IMDB_URL
     // use the src/imdb.js ready to use exported function
+
+
+
+
+
 };
 
 // GET /movies/search
