@@ -20,7 +20,7 @@ const MongoClient = require("mongodb").MongoClient;
 const ObjectId = require("mongodb").ObjectID;
 
 
-const CONNECTION_URL = "mongodb+srv://pcoralie:coconolween@cluster0-udrol.mongodb.net/test?retryWrites=true";
+const CONNECTION_URL = "mongodb+srv://pcoralie:coco@cluster0-udrol.mongodb.net/test?retryWrites=true";
 const DATABASE_NAME = "movies";
 
 var app = Express();
@@ -86,6 +86,7 @@ console.log('denzel RESTful API server started on: ' + port);
 
 //Populate the database with all the Denzel's movies from IMDB_URL
 app.get("/movies/populate", (request, response) => {
+  collection.drop();
   const file = fs.readFileSync("movies.json");
   collection.insertMany(JSON.parse(String(file)),(error, result) => {
     if(error){
@@ -96,23 +97,37 @@ app.get("/movies/populate", (request, response) => {
 console.log("Filmography inserted ! ");
 });
 
-// Fetch a random must watch movie
-app.get("/movies", (request, response) => {
-    collection.find({metascore: {$gte :70}}),((error, result) => {
+// Fetch all must watch movie
+app.post("/movies", (request, response) => {
+    collection.find({metascore: {$gte :70}}).toArray(function(error, result) {
         if(error) {
             return response.status(500).send(error);
         }
-        else
-        {
-          //const index = randomIntFromInterval(0 , results.length -1);
-          response.send(results[index]);
+          console.log("Found all the must watch movie!")
+          response.send(result);
+    });
+});
+
+// Fetch a random must watch movie
+app.get("/movies", (request, response) => {
+  collection.aggregate([{ $match: { metascore: { $gte: 70 } } }, {$sample : {size :1}}]).toArray((error, result)=> {
+  //collection.find({metascore: {$gte :70}}).toArray(function(error, result) {
+
+    //collection.findOne({metascore: {$gte :70}},(error, result) =>{
+        if(error) {
+            return response.status(500).send(error);
         }
+
+          console.log("Found a random must watch movie!")
+          response.send(result);
     });
 });
 
 // Fetch a specific movie
 app.get("/movies/:id", (request, response) => {
-    collection.findOne({ "_id": new ObjectId(request.params.id) }, (error, result) => {
+  //collection.findOne({ "_id": new ObjectId(request.params.id) }, (error, result) => {
+
+    collection.findOne({ "_id": request.params.id }, (error, result) => {
         if(error) {
             return response.status(500).send(error);
         }
@@ -124,16 +139,28 @@ app.get("/movies/:id", (request, response) => {
      // date : the watched date
      // review : the personal review
 app.post("/movies/:id", (request, response)=>{
-  const date = req.query.date;
-  const review = req.query.review;
-  collection.update({ "_id": request.params.id}, {$set : {date :date , review : review}});
-  response.send(" Date and Review updated ! ")
+    var date = request.body.date;
+    var review = request.body.review;
+    collection.updateOne({ "_id": request.params.id}, {$set : {"date" : date , "review" :  review}},(error, result)=>{
+      if(error){
+        return response.status(500).send(error);
+      }
+      response.send(result)
+    });
 });
 
 // Search for denzel's movies
      // limit : number of movies to return (default : 5)
      //metascore : filter by metascore (default : 0)
 app.get("/movies/search", (request, response) => {
+    var limit = Number(request.query.limit) || 5;
+    var metascore = Number(request.query.metascore) || 0;
 
-
+    collection.aggregate([ {$match : {metascore : {$gte : metascore} }},{$sample : { size : limit }} ] ).toArray((error, result) => {
+        if(error) {
+          return response.status(500).send(error);
+        }
+        console.log("limit" + limit + "metascore" + metascore);
+        response.send(result);
+  });
 });
